@@ -5,11 +5,7 @@ for teaching/learning the finite difference method. It generates finite differen
 formulas for derivatives of various orders by using Taylor series expansions of a
 function at evenly spaced points. It also gives the truncation error of a formula
 in the big-O notation. We can use it to generate new formulas in addition to
-verification of known ones.
-
-We may play with this package when teaching/learning numerical computing, especially
-the finite difference method, and explore the distribution and symmetry in the
-coefficients of the formulas. By changing decimal places, we can also see how rounding
+verification of known ones. By changing decimal places, we can also see how rounding
 errors may affect a result.
 
 Beware, though formulas are mathematically correct, they may not be numerically useful.
@@ -20,8 +16,7 @@ can hardly be put into use for numerical computing without, if possible, rewriti
 in a special way. Similarly, the more points are used, the more precise a formula
 is mathematically. However, due to rounding errors, this may not be true numerically.
 
-To run the code, you need the Julia programming language (https://julialang.org/), a
-wonderful and amazing computing platform.
+To run the code, you need the Julia programming language (https://julialang.org/).
 
 Note: This package has been ported to Python, https://github.com/Winux2k/FiniteDifferenceFormula.py.
 
@@ -35,7 +30,7 @@ In Julia REPL, execute the following two commands in order.
 ## The package exports the following functions
 
 ```activatejuliafunction```, ```compute```, ```decimalplaces```, ```find```, ```findbackward```,
-```findforward```, ```formula```, ```formulatable```, ```loadcomputingresults```, ```taylor```,
+```findforward```, ```formula```, ```formulas```, ```loadcomputingresults```, ```taylor```,
 ```taylorcoefs```, ```tcoefs```, ```truncationerror```, ```verifyformula```
 
 ### functions, ```compute```, ```find```, ```findforward```, and ```findbackward```
@@ -176,7 +171,7 @@ provided in ```coefs``` or given through ```points``` and ```k[:]``` as in the l
 ```k[1]*f(x[i+points[1]]) + k[2]*f(x[i+points[2]]) + ...``` It provides also another way
 to verify if a formula is correct.
 
-### function ```formulatable(highest_order = 3, max_num_of_points = 5)```
+### function ```formulas(highest_order = 3, max_num_of_points = 5)```
 
 By default, the function prints all forward, backward, and central finite difference formulas for
 the 1st, 2nd, and 3rd derivatives, using at most 5 points.
@@ -199,4 +194,5 @@ fd.taylor(coefs, 7)                  # print the 1st 7 nonzero terms of the Tayl
 fd.taylor([0, 1, 2, 5], [2, -5, 4, -1], 7)
 fd.activatejuliafunction()           # activate Julia function(s) of the newly computed formula in present REPL session
 fd.verifyformula(1, 2:3, [-4, 5], 6) # verify if f'(x[i]) = (-4f(x[i+2] + 5f(x[i+3)) / (6h) is a valid formula
+fd.formulas(5, 10)                   # print all forward, backword, and central formulas for the 1st, 2nd, ..., 5th derivatives, using at most 10 points
 ```

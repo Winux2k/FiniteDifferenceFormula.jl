@@ -36,7 +36,7 @@ In Julia REPL, execute the following two commands in order.
 
 ```activatejuliafunction```, ```compute```, ```decimalplaces```, ```find```, ```findbackward```,
 ```findforward```, ```formula```, ```formulatable```, ```loadcomputingresults```, ```taylor```,
-```taylorcoefs```, ```truncationerror```, ```verifyformula```
+```taylorcoefs```, ```tcoefs```, ```truncationerror```, ```verifyformula```
 
 ### functions, ```compute```, ```find```, ```findforward```, and ```findbackward```
 
@@ -160,7 +160,7 @@ fd.activatejuliafunction(4, [0, 1, 2, 3, 4], [2/5 -8/5 12/5 -8/3 2/5], 5)
 fd.activatejuliafunction(2, [-1 2 0 2 3 6], [1.257 21.16 2.01 -3.123 -9.5], -12)
 ```
 
-### function ```taylorcoefs(j, n = 10)```
+### function ```taylorcoefs(j, n = 10)``` or ```tcoefs(j, n = 10)```
 
 The function returns the coefficients of the first n terms of the Taylor series of f(x[i+j])
 about x[i].

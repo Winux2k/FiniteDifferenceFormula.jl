@@ -194,7 +194,7 @@ fd.compute(1,-230:230)               # find "461"-point central formula for f'(x
 fd.formula()                         # generate and print the formula computed last time you called compute(...)
 fd.truncationerror()                 # print and return the truncation error of the newly computed formula
 fd.taylor(-2, 5)                     # print the first 5 terms of the Taylor series of f(x[i-2]) about x[i]
-coefs = 2*fd.taylor(0) - 5*fd.taylor(1) + 4*fd.taylor(2) - fd.taylor(5);
+coefs = 2*fd.tcoefs(0) - 5*fd.tcoefs(1) + 4*fd.tcoefs(2) - fd.tcoefs(5);
 fd.taylor(coefs, 7)                  # print the 1st 7 nonzero terms of the Taylor series of 2f(x[i]) - 5f(x[i+1]) + 4f(x[i+2]) - f(x[i+5])
 fd.taylor([0, 1, 2, 5], [2, -5, 4, -1], 7)
 fd.activatejuliafunction()           # activate Julia function(s) of the newly computed formula in present REPL session

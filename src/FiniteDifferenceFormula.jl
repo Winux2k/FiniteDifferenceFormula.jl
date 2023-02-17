@@ -1454,12 +1454,14 @@ Examples
 # The following examples show all forward, backward, and central finite
 # difference formulas for the specified derivatives, using 4 to 11 points.
 julia> import FiniteDifferenceFormula as fd
-julia> fd.formulas(2:5, 4, 11)    # the 2nd, 3rd, .., 5th derivatives
-juliq> fd.formulas([2, 4], 4, 11) # the 2nd and 4th derivatives
-julia> fd.formulas(3, 4, 11)      # the 3rd derivative
+julia> fd.formulas(2:5, 4, 11)       # the 2nd, 3rd, .., 5th derivatives
+juliq> fd.formulas([2, 4, 7], 4, 11) # the 2nd, 4th, and 7th derivatives
+julia> fd.formulas(3, 4, 11)         # the 3rd derivative
 ```
 """
-function formulas(orders = 1:3, min_num_of_points::Int = 2, max_num_of_points::Int = 5)
+function formulas(orders = 1:3,
+                  min_num_of_points::Int = 2,
+                  max_num_of_points::Int = 5)
     global _data, _bigO
     if  !(typeof((collect(orders))[1]) <: Integer)
         println("Error: Invalid input, $orders. ",
@@ -1467,12 +1469,12 @@ function formulas(orders = 1:3, min_num_of_points::Int = 2, max_num_of_points::I
         return
     end
     if min_num_of_points < 2
-        println("Error: Invalid input, $min_num_of_points.",
+        println("Error: Invalid input, $min_num_of_points. ",
                 "An integer greather than 1 is expected,")
         return
     end
     if  max_num_of_points < min_num_of_points
-        println("Error: Invalid input, $max_num_of_points.",
+        println("Error: Invalid input, $max_num_of_points. ",
                 "An integer greather than $min_num_of_points is expected,")
         return
     end
@@ -1487,7 +1489,7 @@ function formulas(orders = 1:3, min_num_of_points::Int = 2, max_num_of_points::I
     oldlen = length(orders)
     orders = sort(unique(collect(orders)))
     if oldlen != length(orders)
-        println("Your input: formulas(", orders, ", $min_num_of_points, ",
+        println("Your input: formulas($orders, $min_num_of_points, ",
                 "$max_num_of_points)")
     end
 
@@ -1514,7 +1516,9 @@ function formulas(orders = 1:3, min_num_of_points::Int = 2, max_num_of_points::I
         end
 
         # central schemes
-        for num_of_points in floor(Int, max(n, min_num_of_points) / 2) : ceil(Int, max_num_of_points / 2)
+        start = floor(Int, max(n, min_num_of_points) / 2)
+        stop  = ceil(Int, max_num_of_points / 2)
+        for num_of_points in start : stop
             len = 2 * num_of_points + 1
             if n >= len; continue; end
             compute(n, -num_of_points : num_of_points)

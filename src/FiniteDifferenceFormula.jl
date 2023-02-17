@@ -202,7 +202,7 @@ function _validate_input(n, points, printformulaq = false)
 end  # _validate_input
 
 """
-```compute(n, points, printformulaq = false)```
+```compute```(n, points, printformulaq = false)
 
 Compute a formula for the nth order derivative using the given points.
 ```
@@ -239,7 +239,7 @@ function compute(n, points, printformulaq = false)
 end  # compute
 
 """
-```function find(n, points, printformulaq = false)```
+```find```(n, points, printformulaq = false)
 
 Compute a formula for the nth order derivative using the given points.
 
@@ -295,7 +295,7 @@ function _findforward(n, points, printformulaq = false, forwardq::Bool = true)
 end
 
 """
-```function findforward(n, points, printformulaq = false)```
+```findforward```(n, points, printformulaq = false)
 
 Compute a formula for the nth order derivative using the given points.
 
@@ -319,7 +319,7 @@ function findforward(n, points, printformulaq = false)
 end
 
 """
-```function findbackward(n, points, printformulaq = false)```
+```findbackward```(n, points, printformulaq = false)
 
 Compute a formula for the nth order derivative using the given points.
 
@@ -557,7 +557,7 @@ function _compute(n::Int, points::Vector{Int}, printformulaq::Bool = false)
 end  # _compute
 
 """
-```loadcomputingresults(results)```
+```loadcomputingresults```(results)
 
 Input: 'results' is a tuple, (n, points, k[:], m). See compute(...).
 
@@ -846,7 +846,7 @@ end  # _print_bigo_formula
 #
 # No valid formula can be found? Still dump the computing result for teaching.
 """
-```formula()```
+```formula```()
 
 Generate and list:
 
@@ -930,7 +930,7 @@ end  # formula
 #    (-1, "")      - There is no valid formula
 #    (n, "O(h^n)") - There is a valid formula
 """
-```truncationerror()```
+```truncationerror```()
 
 Show the truncation error of the last computed formula in the big_O notation.
 
@@ -962,7 +962,7 @@ end  # truncationerror
 
 # show current decimal places
 """
-```decimalplaces()``` or ```decimalplaces(n)```
+```decimalplaces```() or ```decimalplaces```(n)
 
 Show present decimal places for generating Julia function(s) of computed
 formulas, if no argument is passed to ```decimalplaces```. Otherwise, set
@@ -1027,8 +1027,8 @@ end  # _printexampleresult
 # the name is self-explanatory. it is exactly the same as the function
 # activatejuliafunction(n, points, k, m)
 """
-```verifyformula(n, points, k, m = 1)``` or
-```activatejuliafunction(n, points, k, m = 1)```
+```verifyformula```(n, points, k, m = 1) or
+```activatejuliafunction```(n, points, k, m = 1)
 
 Verify if a formula is valid. If it is valid, generate and activate its Julia
 function(s). If not, try to find a formula for the derivative using the points.
@@ -1294,7 +1294,7 @@ end  # activatejuliafunction
 # calculate the coefficients of Taylor series of f(x[i + j]) about x[i]
 # for teaching/learning!
 """
-```taylorcoefs(j, n = 10))```
+```taylorcoefs```(j, n = 10))
 
 Compute and return coefficients of the first n terms of the Taylor series of
 f(x[i + j]) = f(x[i] + jh) about x[i], where h is the increment in x.
@@ -1316,7 +1316,7 @@ function taylorcoefs(j::Int, n::Int = 10)
 end  # taylorcoefs
 
 """
-```tcoefs(j, n = 10))```
+```tcoefs```(j, n = 10))
 
 Same as taylorcoefs(j, n).
 """
@@ -1327,18 +1327,18 @@ end  # tcoefs
 # print readable Taylor series expansion of f(x[i + j]) about x[i]
 # for teaching/learning!
 """
-```taylor()```
+```taylor```()
   - Print the first few nonzero terms of the Taylor series of the linear
     combination k[0]f(x[i+j0]) + k[1]f(x[i+j1]) + ... for the newly
     computed formula (even if failed).
 
-```taylor(j, n = 10)```
+```taylor```(j, n = 10)
   - Print the 1st n terms of Taylor series of f(x[i+j]) about x[i].
 
-```taylor(coefs, n = 10)```, or
+```taylor```(coefs, n = 10), or
   - Print the 1st n terms of Taylor series with coefficients in 'coefs'
 
-```taylor(points, k, n::Int = 10)```
+```taylor```(points, k, n::Int = 10)
   - Prints the 1st n nonzero terms of the Taylor series of the linear
     combination:  k[0]f(x[i+points[0]]) + k[1]f(x[i+points[1]]) + ...
 
@@ -1442,7 +1442,7 @@ function _num_of_used_points()
 end  # _num_of_used_points
 
 """
-```formulas(orders = 1:3, min_num_of_points = 2, max_num_of_points = 5)```
+```formulas```(orders = 1:3, min_num_of_points = 2, max_num_of_points = 5)
 
 By default, the function prints all forward, backward, and central finite
 difference formulas for the 1st, 2nd, and 3rd derivatives, using 2 to 5 points.

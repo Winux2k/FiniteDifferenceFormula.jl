@@ -180,6 +180,7 @@ function _validate_input(n, points, printformulaq = false)
         return []
     end
 
+    oldpoints = points # v1.2.8
     points = sort(unique(collect(points)))
     len = length(points)
     if len < 2
@@ -189,7 +190,7 @@ function _validate_input(n, points, printformulaq = false)
     end
 
     _initialization()
-    if len != oldlen
+    if len != oldlen || oldpoints != points
         input_points = _format_of_points(points)
         print(_dashline(), "\nYour input is converted to ($n, $input_points")
         if printformulaq; print(", true"); end

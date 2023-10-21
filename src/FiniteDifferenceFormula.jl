@@ -28,6 +28,11 @@ _NUM_OF_EXTRA_TAYLOR_TERMS::Int     = 8       # for examining truncation error
 _decimal_places::Int                = 16      # for generating Julia function(s)
                                               # call decimalplaces(n) to reset it
 
+_min_size_of_data_parallelism       = 50      # if the size of a vector is larger
+    # than this value, do data parallelism through Folds.
+    # it depends on the performance of a single thread of CPU - a more powerful CPU
+    # has a larger value. but it makes no big difference.
+
 mutable struct _FDData
     n; points; k; m; coefs                    # on one line? separated by ;
 end
@@ -374,16 +379,17 @@ end
 # v1.3.3, use 'map' or Folds.map to improve time performance dramatically
 # for large matrix A
 function _rref!(A::Matrix{Rational{BigInt}}, B::Matrix{Rational{BigInt}})
+    global _min_size_of_data_parallelism
     nr, nc = size(A);
     i = 1
     while i < nr
         j = i + 1
         # make a[i, i] the pivotal entry
-        worthy = nr - i > 50   # is it large or is it worhty for data parallelism
+        worthy = nr - i > _min_size_of_data_parallelism
         if i != 1              # A[1, 1] = 1 is already the pivotal entry
             m = mi = 0 # define the VARIABLES
             if worthy
-                (m, mi) = Folds.findmax(abs.(A[i : nr, i]))
+              (m, mi) = Folds.findmax(abs.(A[i : nr, i]))
             else
                 (m, mi) = findmax(abs.(A[i : nr, i]))
             end
@@ -394,8 +400,8 @@ function _rref!(A::Matrix{Rational{BigInt}}, B::Matrix{Rational{BigInt}})
             end
             B[i] /= A[i, i]
             if worthy
-                f(x) = x / A[i, i]
-                A[i, j : nc] = Folds.map(f, A[i, j : nc])
+              f(x) = x / A[i, i]
+              A[i, j : nc] = Folds.map(f, A[i, j : nc])
             else
                 A[i, j : nc] /= A[i, i]
             end
@@ -420,14 +426,14 @@ function _rref!(A::Matrix{Rational{BigInt}}, B::Matrix{Rational{BigInt}})
     # A[nr, nr] = 1            # never used again
 
     for i = nr : -1 : 2        # eliminate entries above A[i, i]
-        if i > 50              # is it large or is it worhty for data parallelism
+        if i > _min_size_of_data_parallelism
             function f(x, y)
-				if x != 0
-					return y - x * B[i]
-				else
-					return y
-				end
-			end
+                if x != 0
+                    return y - x * B[i]
+                else
+                    return y
+                end
+            end
             B[1:i-1] = Folds.map(f, A[1:i-1, i], B[1:i-1])
         else
             for r = 1 : i - 1
@@ -482,6 +488,7 @@ end
 function _compute(n::Int, points::Vector{Int}, printformulaq::Bool = false)
     global _lcombination_coefs, _formula_status, _range_inputq, _range_input
     global _NUM_OF_EXTRA_TAYLOR_TERMS
+    global _min_size_of_data_parallelism
 
     # for teaching's purpose, we don't do so
     # if length(points) <= n
@@ -507,6 +514,8 @@ function _compute(n::Int, points::Vector{Int}, printformulaq::Bool = false)
         return nothing
     end
 
+    ##f0(x) = _taylor_coefs(x, max_num_of_terms) # Folds v0.2.8 failed
+    ##coefs = Folds.map(f0, points)
     for i in 1 : len
         coefs[i] = _taylor_coefs(points[i], max_num_of_terms)
     end
@@ -539,7 +548,7 @@ function _compute(n::Int, points::Vector{Int}, printformulaq::Bool = false)
     B = []
     try
         A = Matrix{Rational{BigInt}}(undef, len, len)
-        B = zeros(Rational{BigInt}, len, 1)
+        B = zeros(Rational{BigInt}, 1, len) # v1.3.3 for output: no k' is needed
     catch OutOfMemoryError
         println("Memory allocation error: _compute #2.")
         _reset()
@@ -587,7 +596,14 @@ function _compute(n::Int, points::Vector{Int}, printformulaq::Bool = false)
 
     # solve Ax = B for x, i.e., k[:]
     _rref!(A, B); A = []                   # output: B is the solution
-    k = B // gcd(B)                        # change each element to an integer
+    tmp = gcd(B) # v1.3.3, parallelized
+    f1(x) = x // tmp
+    if len > _min_size_of_data_parallelism
+        k = Folds.map(f1, B)
+    else
+        k = map(f1, B)
+    end
+    ##k = B // gcd(B)                      # change each element to an integer
     # the following code does the same     # for translating to other languages
     ## for i in 1 : len
     ##    if B[i] != round(BigInt, B[i]); k *= denominator(B[i]); end
@@ -595,15 +611,20 @@ function _compute(n::Int, points::Vector{Int}, printformulaq::Bool = false)
 
     # Taylor series expansion of the linear combination
     # k[1]*f(x[i+points[1]]) + k[2]*f(x[i+points[2]]) + ... + k[len]*f(x[i+points[len]])
-    _lcombination_coefs = k[1] * coefs[1]  # let Julia determine the type
-    for i in 2 : len
-        if k[i] == 0; continue; end
-        _lcombination_coefs += k[i] * coefs[i]
+    function f2(x, y)
+        f(z) = x * z
+        return Folds.map(f, y)
     end
+    _lcombination_coefs = Folds.sum(Folds.map(f2, k[1:len], coefs[1:len]))
+    ##_lcombination_coefs = k[1] * coefs[1]  # let Julia determine the type
+    ##for i in 2 : len
+    ##    if k[i] == 0; continue; end
+    ##    _lcombination_coefs += k[i] * coefs[i]
+    ##end
 
     # find the first nonzero term, v1.0.3
     m = _lcombination_coefs[n + 1]
-    for i in 1 : n
+    for i in 1 : n # no need for parallelism because n is small
         if _lcombination_coefs[i] != 0
             m = _lcombination_coefs[i]
             break
@@ -611,7 +632,16 @@ function _compute(n::Int, points::Vector{Int}, printformulaq::Bool = false)
     end
 
     # "normalize" k[:] and m so that m is a positive integer
-    if m < 0; k *= -1; _lcombination_coefs *= -1; end
+    if m < 0
+        k *= -1
+        f3(x) = -1 * x
+        if max_num_of_terms > _min_size_of_data_parallelism
+            _lcombination_coefs = Folds.map(f3, _lcombination_coefs)
+        else
+            _lcombination_coefs = map(f3, _lcombination_coefs)
+        end
+    end
+
     m = _lcombination_coefs[n + 1]
     x = round(BigInt, m)
     if x == m; m = x; end                  # already integer; don't show like 5//1
@@ -625,7 +655,13 @@ function _compute(n::Int, points::Vector{Int}, printformulaq::Bool = false)
     if printformulaq; formula(); end
 
     if _formula_status >= 0
-        return (n, _range_inputq ? _range_input : points, round.(BigInt, k'), m)
+        f4(x) = round(BigInt, x)
+        if len > _min_size_of_data_parallelism
+            tmp = Folds.map(f4, k)
+        else
+            tmp = map(f4, k)
+        end
+        return (n, _range_inputq ? _range_input : points, tmp, m)
     else
         return nothing
     end
@@ -757,11 +793,12 @@ function _test_formula_validity(verifyingq::Bool = false)
     #    k[1]*coefs[1][j] + k[2]*coefs[2][j] + ... + k[len]*coefs[len][j] = 0
     # where j = 1:n
     global _data, _lcombination_coefs, _range_inputq, _range_input
+    global _min_size_of_data_parallelism
 
     n = _data.n
-    k = _data.k
-    coefs = _data.coefs
-    points = _data.points
+    k = _data.k           # just convenient names for the data; not copies!
+    coefs = _data.coefs   #
+    points = _data.points #
     len = length(points)
 
     input_points = _range_inputq ? _range_input : points'
@@ -832,15 +869,21 @@ function _test_formula_validity(verifyingq::Bool = false)
         return m
     end
 
-    if sum(k) != 0   # sum of coefficients must be 0
+    kLen = length(k)
+    if kLen > _min_size_of_data_parallelism
+        tmp = Folds.sum(k)
+    else
+        tmp = sum(k)
+    end
+    if tmp != 0   # sum of coefficients must be 0
         println("***** Warning: $n, $input_points : sum(k[:]) != 0")
         _formula_status += 1
     end
 
     # are coefficients of central formulas symmetrical about x[i]?
     if formula_for_inputq && _range_inputq && abs(_range_input.start) == _range_input.stop
-        j = length(k)
-        for i in 1 : round(Int64, length(k)/2)
+        j = kLen
+        for i in 1 : round(Int64, kLen / 2)
             if abs(k[i]) != abs(k[j])
                 println("***** Warning: $n, $input_points : k[$i] != k[$j]")
                 _formula_status += 1

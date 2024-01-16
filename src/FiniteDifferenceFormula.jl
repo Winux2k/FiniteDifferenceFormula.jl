@@ -410,12 +410,11 @@ function _rref!(A::Matrix{Rational{BigInt}}, b::Matrix{Rational{BigInt}})
     nr, nc = size(A);
     i = 1
     while i < nr
-print("Row ", i, " >> "); t = time()
         j = i + 1
         # make a[i, i] the pivotal entry
         if i != 1                    # A[1, 1] = 1 is already the pivotal entry
             # find the largest entry on A[i:end, i]
-            (m, mi) = findmax(abs.(A[i : nr, i])) # It seems a little faster than Folds.findmax
+            (_, mi) = findmax(abs.(A[i : nr, i])) # It seems a little faster than Folds.findmax
             mi += i - 1                           # and code using @threads for (nr = 12800)!!!
 
             if mi != i               # interchange the two rows
@@ -427,7 +426,7 @@ print("Row ", i, " >> "); t = time()
             # A[i, i] = 1            # unnecessary
         end
 
-        # v1.3.4, rewritten and gain 1.37X speedup when A is large
+        # v1.3.4, rewritten, 1.37X speedup when A is large
         chunks = partition(j : nc, 5)
         for r = j : nr
             Ari = A[r, i]
@@ -450,7 +449,6 @@ print("Row ", i, " >> "); t = time()
             end
         end
         i = j
-println(round(time() - t;digits=2), " sec")
     end
     b[nr] /= A[nr, nr]
     # A[nr, nr] = 1                  # unnecessary
